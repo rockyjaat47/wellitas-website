@@ -230,7 +230,7 @@ s { opacity: .55; margin-left: .4em; font-size: .8em; }
 .bar--first { margin-top: 30px; }
 .bar a.bar__start { text-align: left; padding: 0; }
 .bar__end { text-align: right; padding-right: 16px; }
-.giant--static { font-weight: 400; margin: 90px 0 0; }
+.giant--static { font-weight: 400; margin: 90px 0 0; white-space: normal; font-size: clamp(64px, 13vw, 250px); line-height: .95; }
 .card__img .photo { object-fit: cover; padding: 0; }
 .card__img { position: relative; }
 .tag { position: absolute; z-index: 1; top: 10px; left: 10px; background: var(--forest); color: var(--mist); font-size: 11px; text-transform: uppercase; padding: 4px 8px; border-radius: 2px; }
