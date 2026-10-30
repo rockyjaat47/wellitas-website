@@ -25,9 +25,7 @@ Website and online store for **Wellitas** (Wellitas Consumers Pvt. Ltd.) – gre
 
 ## Run locally
 
-```bash
-cd server && npm install && npm start
-```
+Install Node.js 22.13+ from https://nodejs.org, then double-click **`start-mac.command`** (Mac) or **`start-windows.bat`** (Windows) — or run `cd server && npm install && npm start`.
 
 Then open http://localhost:3000 (store) and http://localhost:3000/admin (admin). See **[SETUP.md](SETUP.md)** for first login, Razorpay and going live.
 

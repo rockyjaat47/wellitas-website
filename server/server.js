@@ -1,5 +1,7 @@
 // Wellitas store server: serves the website, the /api for the store and admin, and the /admin panel.
 const path = require("node:path");
+// Settings (Razorpay keys, admin login, …) can live in server/.env — loaded before anything reads them.
+try { process.loadEnvFile(path.join(__dirname, ".env")); } catch {}
 const express = require("express");
 const { DATA_DIR } = require("./db");
 const { ensureOwner } = require("./lib/auth");

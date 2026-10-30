@@ -14,27 +14,25 @@ Data is kept in one SQLite file (`DATA_DIR/wellitas.db`) plus uploaded images in
 
 ---
 
-## 1. Run it on your computer
+## 1. Test it on your computer
 
-Needs **Node.js 22.13 or newer** (`node -v`).
+1. Install **Node.js 22.13 or newer** (LTS) from https://nodejs.org — nothing else is needed.
+2. Download the code: `git clone https://github.com/rockyjaat47/wellitas-website.git` (or GitHub → **Code → Download ZIP** and unzip).
+3. Start it:
+   - **Mac:** double-click `start-mac.command`. If macOS blocks it, right-click → **Open** → **Open**.
+   - **Windows:** double-click `start-windows.bat`.
+   - **Terminal:** `cd server && npm install && npm start`
+4. The store opens at http://localhost:3000 and the admin panel at http://localhost:3000/admin.
 
-```bash
-cd server
-npm install
-npm start
-```
+**First login:** on the first start the server creates the owner account and saves a one-time password to `server/data/FIRST-LOGIN.txt`. Log in, change the password in **Settings → Your account**, then delete that file. (Or put `ADMIN_EMAIL` and `ADMIN_PASSWORD` in `server/.env` before the first start.)
 
-Open http://localhost:3000 for the store and http://localhost:3000/admin for the admin panel.
+While no Razorpay keys are set, the start scripts turn on **demo payments**: "Pay online" shows a test screen and no real money moves. Cash on delivery works normally.
 
-**First login:** on the first start the server creates the owner account and saves a one-time password to `server/data/FIRST-LOGIN.txt`. Log in, change the password in **Settings → Your account**, then delete that file. (Or set `ADMIN_EMAIL` and `ADMIN_PASSWORD` before the first start.)
+**Settings file:** copy `.env.example` to `server/.env` and fill in what you need (admin login, Razorpay keys). The server reads it on every start. `server/.env` and `server/data/` are never uploaded to GitHub.
 
-To try online payments without Razorpay keys, start with demo payments (no real money):
+**Start fresh:** stop the server and delete the `server/data` folder — all test orders, customers and uploads are removed and the catalogue is re-created from `data.js` on the next start.
 
-```bash
-PAYMENTS_DEMO=1 npm start
-```
-
-Run the automated tests with `npm test`.
+Run the automated tests with `cd server && npm test`.
 
 ---
 
@@ -54,33 +52,36 @@ Keys are only read from the environment — they are never saved in the database
 
 ---
 
-## 3. Put it online
+## 3. Put it on your own hosting
 
-You need a host that runs Node.js **and keeps files on disk** (for the database and uploaded images).
+Your host must run **Node.js 22.13+** and keep files on disk (the database and uploaded images live in `server/data`).
+Plain PHP-only shared hosting can still show the website, but not checkout or the admin panel.
 
-### Option A — Render (easiest, about $7/month)
-1. Push this repo to GitHub (already done: `rockyjaat47/wellitas-website`).
-2. On https://render.com → **New → Blueprint** → pick the repo. It reads `render.yaml`, which creates the web service with a 1 GB persistent disk.
-3. In the service's **Environment** tab, set `ADMIN_EMAIL`, `ADMIN_PASSWORD` and the three Razorpay values.
-4. **Settings → Custom domain** → add `wellitas.co.in` and follow the DNS instructions at your domain registrar.
+### Option A — cPanel / Hostinger hosting with "Node.js App"
+Many business hosting plans (Hostinger, GoDaddy, Bluehost cPanel with *Setup Node.js App*) support this:
+1. Upload the repository (Git Version Control in cPanel, or upload the ZIP and extract) e.g. to `~/wellitas`.
+2. **Setup Node.js App → Create application**: Node version 22 or newer, application root `wellitas/server`, startup file `server.js`, URL = your domain.
+3. Click **Run NPM Install**.
+4. Create `wellitas/server/.env` from `.env.example` (File Manager), set `NODE_ENV=production`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` and your Razorpay keys.
+5. **Restart** the app and open `https://your-domain/admin`.
 
-Railway (https://railway.app) also works: add a volume mounted at `/data` and set `DATA_DIR=/data`.
-
-### Option B — Your own VPS (Hostinger, DigitalOcean, AWS Lightsail…)
+### Option B — VPS (Hostinger VPS, DigitalOcean, AWS Lightsail…)
 ```bash
-# on the server (Ubuntu), after installing Node.js 22+
+# Ubuntu, after installing Node.js 22+ (https://nodejs.org or nodesource)
 git clone https://github.com/rockyjaat47/wellitas-website.git && cd wellitas-website/server
 npm install --omit=dev
-cp ../.env.example .env   # fill in the values
-npm install -g pm2
-pm2 start server.js --name wellitas --node-args="--env-file=.env" && pm2 save && pm2 startup
+cp ../.env.example .env && nano .env          # set NODE_ENV=production, admin login, Razorpay keys
+sudo npm install -g pm2
+pm2 start server.js --name wellitas && pm2 save && pm2 startup
 ```
-Then put Nginx (or Caddy) in front with an HTTPS certificate (`certbot --nginx`) and proxy to `localhost:3000`.
+Then put Nginx in front with HTTPS (`sudo certbot --nginx`) and proxy your domain to `localhost:3000`.
+To update later: `git pull && npm install --omit=dev && pm2 restart wellitas`.
 
-### Always
-- Set `NODE_ENV=production` (secure cookies).
-- Use **HTTPS** — Razorpay and browsers require it.
-- **Back up `DATA_DIR` daily** (the `.db` file and `uploads/`). On Render, use the disk snapshot feature; on a VPS, a nightly `cp` or `rclone` to Google Drive/S3.
+### Before going live
+- `NODE_ENV=production` in `server/.env` and the site served over **HTTPS** (Razorpay requires it).
+- Delete the test data from your computer's testing — the live server starts with a fresh `server/data`.
+- Real Razorpay **live** keys and the webhook pointing to `https://your-domain/api/razorpay/webhook`.
+- **Back up `server/data` daily** (the `wellitas.db` file and `uploads/`), e.g. a nightly copy to Google Drive or S3.
 
 ---
 
