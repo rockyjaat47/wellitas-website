@@ -1,13 +1,17 @@
+# Render Blueprint: one web service (website + API + admin) with a persistent disk for the database and uploads.
+# No rootDir on purpose: the server serves the website files from the repo root.
 services:
   - type: web
     name: wellitas-store
     runtime: node
-    plan: starter
-    rootDir: server
-    buildCommand: npm install --omit=dev
-    startCommand: node server.js
+    plan: starter            # persistent disks need a paid plan (Starter ≈ $7/month)
+    region: singapore        # closest Render region to India
+    buildCommand: cd server && npm install --omit=dev
+    startCommand: node server/server.js
     healthCheckPath: /api/config
     envVars:
+      - key: NODE_VERSION
+        value: 24.11.1       # node:sqlite needs Node 22.13 or newer
       - key: NODE_ENV
         value: production
       - key: DATA_DIR
@@ -15,7 +19,7 @@ services:
       - key: SESSION_SECRET
         generateValue: true
       - key: ADMIN_EMAIL
-        sync: false
+        sync: false          # you type these in when creating the Blueprint
       - key: ADMIN_PASSWORD
         sync: false
       - key: RAZORPAY_KEY_ID
