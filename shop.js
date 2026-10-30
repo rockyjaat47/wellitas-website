@@ -1,4 +1,5 @@
 // Shop page: category chips + product grid, driven by data.js. ?cat=<id> preselects a category.
+CATALOG.then(function init() {
 const grid = $("#grid"), chips = $("#chips");
 const DEFAULT_BLURB = $("#shopBlurb").innerHTML;
 const inCat =id => PRODUCTS.filter(p => id === "all" || p.cats.includes(id));
@@ -29,3 +30,4 @@ chips.addEventListener("click", e => {
   if (b) show(b.dataset.cat);
 });
 show(new URLSearchParams(location.search).get("cat") || "all");
+});

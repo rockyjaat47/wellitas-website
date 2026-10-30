@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Checkout – Wellitas</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="assets/img/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Oranienbaum&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="solid">
+<main id="top" class="page-top">
+  <section class="section">
+    <div class="bar bar--first"><a href="shop.html" class="bar__start">[Continue shopping]</a><span>Checkout</span><span class="bar__end">[Secure]</span></div>
+
+    <div id="checkout">
+      <p class="mono center co-loading">Loading your cart…</p>
+    </div>
+  </section>
+</main>
+
+<div class="modal" id="demoPay" hidden>
+  <div class="modal__box">
+    <p class="mono label">Demo payment</p>
+    <p class="display small-display">Online payments are in demo mode</p>
+    <p class="mono small">Razorpay keys aren’t set yet, so no real money moves. Choose what the customer does:</p>
+    <div class="modal__actions"><button class="btn" data-demo="pay">[Simulate success]</button><button class="btn btn--ghost" data-demo="cancel">[Cancel payment]</button></div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="layout.js"></script>
+<script src="checkout.js"></script>
+</body>
+</html>

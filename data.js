@@ -124,4 +124,4 @@ const rupees = n => "₹" + n.toLocaleString("en-IN");
 const offPct = p => Math.round((1 - p.price / p.mrp) * 100);
 const catName = id => (CATEGORIES.find(c => c.id === id) || {}).name || "";
 const productUrl = p => `product.html?p=${p.slug}`;
-const imgSrc = f => `assets/img/${f}`;
+const imgSrc = f => (/^(\/|https?:)/.test(f) ? f : `assets/img/${f}`);

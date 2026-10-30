@@ -1,4 +1,5 @@
 // Home page only. Shared header/menu/footer live in layout.js, catalogue in data.js.
+CATALOG.then(function init() {
 
 /* ---------- product slider: the seven teas ---------- */
 const TEAS = PRODUCTS.filter(p => p.cats.some(c => ["green", "black", "ctc"].includes(c)) && p.size !== "850 g");
@@ -66,9 +67,10 @@ function drift() {
 requestAnimationFrame(drift);
 
 /* ---------- drag to scroll category cards ---------- */
-const track = $("#courses");
+const cardTrack = $("#courses");
 let down = false, sx = 0, sl = 0, moved = false;
-track.addEventListener("pointerdown", e => { if (e.pointerType !== "mouse") return; down = true; moved = false; sx = e.clientX; sl = track.scrollLeft; track.style.scrollSnapType = "none"; });
-addEventListener("pointerup", () => { down = false; track.style.scrollSnapType = ""; });
-track.addEventListener("pointermove", e => { if (!down) return; if (Math.abs(e.clientX - sx) > 5) moved = true; track.scrollLeft = sl - (e.clientX - sx); });
-track.addEventListener("click", e => { if (moved) e.preventDefault(); }, true);
+cardTrack.addEventListener("pointerdown", e => { if (e.pointerType !== "mouse") return; down = true; moved = false; sx = e.clientX; sl = cardTrack.scrollLeft; cardTrack.style.scrollSnapType = "none"; });
+addEventListener("pointerup", () => { down = false; cardTrack.style.scrollSnapType = ""; });
+cardTrack.addEventListener("pointermove", e => { if (!down) return; if (Math.abs(e.clientX - sx) > 5) moved = true; cardTrack.scrollLeft = sl - (e.clientX - sx); });
+cardTrack.addEventListener("click", e => { if (moved) e.preventDefault(); }, true);
+});

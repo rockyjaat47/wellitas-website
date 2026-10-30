@@ -1,8 +1,9 @@
-// Product page template: product.html?p=<slug>, rendered from data.js.
+// Product page template: product.html?p=<slug>, rendered from the live catalogue (or data.js offline).
 const root = $("#product");
 const slug = new URLSearchParams(location.search).get("p");
-const p = PRODUCTS.find(x => x.slug === slug);
 
+CATALOG.then(({ live }) => {
+const p = PRODUCTS.find(x => x.slug === slug);
 if (!p) {
   root.innerHTML = `
   <section class="section">
@@ -14,10 +15,13 @@ if (!p) {
     </div>
   </section>`;
 } else {
-  render(p);
+  render(p, live);
 }
+});
 
-function render(p) {
+function render(p, live) {
+  const soldOut = p.inStock === false;
+  const lowLeft = live && p.left;
   const cat = p.cats[0];
   const isFood = !p.cats.includes("gifts");
   const views = [{ src: p.img, label: p.photo ? "Open" : "Front" }];
@@ -38,10 +42,10 @@ function render(p) {
 
     <div class="pdp">
       <div class="pdp__info reveal">
-        <p class="mono">${p.brand}${p.code ? " · " + p.code : ""}</p>
-        <h1 class="display pdp__name">${p.name}</h1>
-        <p class="mono pdp__taste">${p.taste}</p>
-        <p class="mono small">${p.pitch}</p>
+        <p class="mono">${esc(p.brand)}${p.code ? " · " + esc(p.code) : ""}</p>
+        <h1 class="display pdp__name">${esc(p.name)}</h1>
+        <p class="mono pdp__taste">${esc(p.taste)}</p>
+        <p class="mono small">${esc(p.pitch)}</p>
       </div>
 
       <div class="pdp__stage">
@@ -63,9 +67,13 @@ function render(p) {
             <button data-q="-1" aria-label="Fewer">−</button><span id="qty">1</span><button data-q="1" aria-label="More">+</button>
           </div>
         </div>
-        <a class="btn btn--wide" id="order" target="_blank" rel="noopener">[Order on WhatsApp]</a>
-        <a class="btn btn--wide btn--ghost" href="tel:+919910973302">[Call +91 99109 73302]</a>
-        <p class="mono tiny">Dispatch Mon – Sat · Delivery charges confirmed with your order</p>
+        ${soldOut ? `<p class="mono stock-note">Sold out — back soon</p>` : lowLeft ? `<p class="mono stock-note">Only ${p.left} left</p>` : ""}
+        ${live ? `<button class="btn btn--wide" id="addCart" ${soldOut ? "disabled" : ""}>[Add to cart]</button>
+        <button class="btn btn--wide btn--ghost" id="buyNow" ${soldOut ? "disabled" : ""}>[Buy it now]</button>
+        <a class="mono tiny wa-link" id="order" target="_blank" rel="noopener">Or order on WhatsApp →</a>`
+        : `<a class="btn btn--wide" id="order" target="_blank" rel="noopener">[Order on WhatsApp]</a>
+        <a class="btn btn--wide btn--ghost" href="tel:+919910973302">[Call +91 99109 73302]</a>`}
+        <p class="mono tiny">Prepaid or cash on delivery · Dispatch Mon – Sat</p>
       </div>
     </div>
   </section>
@@ -116,6 +124,11 @@ function render(p) {
     const msg = `Hi Wellitas, I'd like to order ${qty} × ${p.name} (${p.size}) at ${rupees(p.price)} each.`;
     order.href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
   };
-  $$("[data-q]", root).forEach(b => b.addEventListener("click", () => { qty = Math.min(50, Math.max(1, qty + +b.dataset.q)); update(); }));
+  $$("[data-q]", root).forEach(b => b.addEventListener("click", () => { qty = Math.min(p.left || 50, Math.max(1, qty + +b.dataset.q)); update(); }));
   update();
+
+  /* cart */
+  $("#addCart")?.addEventListener("click", () => { Cart.add(p.slug, qty); toast(`Added ${qty} × ${p.short || p.name} to your cart`); setDrawer(true); });
+  $("#buyNow")?.addEventListener("click", () => { Cart.add(p.slug, qty); location.href = "checkout.html"; });
+  if (live) track("view_item", { slug: p.slug, value: p.price });
 }
