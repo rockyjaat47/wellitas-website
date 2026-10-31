@@ -36,7 +36,7 @@ const Cart = {
 
 const HEADER = `
 <header class="header" id="header">
-  <div class="announce" id="announce">Festive offer: 50% off all Green and Black Tea blends. Pour something good into the season.</div>
+  <div class="announce" id="announce"><span>Festive offer: 50% off all Green and Black Tea blends. Pour something good into the season.</span></div>
   <div class="header__bar">
     <a href="index.html" class="header__logo" aria-label="Wellitas home"><img src="assets/img/logo.png" alt="Wellitas – Refresh, Relax, Revive"></a>
     <nav class="header__nav" aria-label="Main">
@@ -246,7 +246,7 @@ function track(type, data = {}) {
 CATALOG.then(({ live }) => {
   renderCart();
   if (!live) return;
-  if (STORE_CONFIG.announcement) $("#announce").textContent = STORE_CONFIG.announcement;
+  if (STORE_CONFIG.announcement) $("#announce").innerHTML = `<span>${esc(STORE_CONFIG.announcement)}</span>`;
   else $("#announce").remove();
   if (STORE_CONFIG.ga4Id) {
     const s = document.createElement("script");

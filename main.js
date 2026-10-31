@@ -108,6 +108,7 @@ function drift() {
     const span = el.firstElementChild;
     const speed = parseFloat(el.dataset.drift) || 0.35;
     const max = Math.max(0, span.scrollWidth - el.clientWidth);
+    if (el.classList.contains("giant") && innerWidth <= 900) { span.style.transform = "none"; return; } // phones: keep "KADAK CHAI." fully visible
     const x = el.classList.contains("giant") ? (0.5 - p) * speed * innerWidth : -p * Math.max(max, innerWidth * speed);
     span.style.transform = `translate3d(${x}px,0,0)`;
   });
