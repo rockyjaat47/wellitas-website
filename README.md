@@ -30,3 +30,5 @@ Install Node.js 22.13+ from https://nodejs.org, then double-click **`start-mac.c
 Then open http://localhost:3000 (store) and http://localhost:3000/admin (admin). See **[SETUP.md](SETUP.md)** for first login, Razorpay and going live.
 
 Opened without the server (e.g. on GitHub Pages), the site still works as a catalogue and falls back to ordering on WhatsApp.
+
+**Admin demo:** on GitHub Pages, `/admin` opens a read-only demo with **sample data** (made-up customers and orders, nothing is saved) so you can try every screen. On your own server the demo switches off and the real login appears. Rebuild the sample data with `node server/scripts/build-admin-demo.js`.

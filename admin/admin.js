@@ -9,7 +9,51 @@ const day = s => new Date(s + "T00:00:00").toLocaleDateString("en-IN", { day: "n
 const view = $("#view");
 let ME = null, SETTINGS = null;
 
+/* ---------- demo mode: on static hosting (GitHub Pages) there is no /api, so the panel shows saved sample data ---------- */
+let DEMO = null;
+const DEMO_MSG = "This is a demo with sample data — changes aren’t saved. Run the store server to use the admin for real.";
+async function detectDemo() {
+  try {
+    const r = await fetch("/api/admin/me", { credentials: "same-origin" });
+    if ((r.headers.get("content-type") || "").includes("json")) return false; // a real server answered (even 401)
+  } catch {}
+  const d = await fetch("demo/data.json").then(r => (r.ok ? r.json() : null)).catch(() => null);
+  if (!d) return false;
+  DEMO = d.F;
+  return true;
+}
+function demoApi(path, opts) {
+  if ((opts.method || "GET") !== "GET") return Promise.reject(new Error(DEMO_MSG));
+  const [p, qs] = path.split("?"), q = new URLSearchParams(qs || "");
+  const out = v => (v === undefined ? Promise.reject(new Error("Not available in this demo")) : Promise.resolve(structuredClone(v)));
+  if (p === "/orders") {
+    const s = (q.get("q") || "").toLowerCase();
+    const list = DEMO.allOrders.filter(o => (!q.get("status") || o.status === q.get("status")) && (!q.get("payment") || o.paymentStatus === q.get("payment"))
+      && (!q.get("method") || o.paymentMethod === q.get("method")) && (!q.get("fulfillment") || o.fulfillmentStatus === q.get("fulfillment"))
+      && (!s || [o.number, o.name, o.phone].join(" ").toLowerCase().includes(s))
+      && (!q.get("from") || o.createdAt.slice(0, 10) >= q.get("from")) && (!q.get("to") || o.createdAt.slice(0, 10) <= q.get("to")));
+    const page = +q.get("page") || 1, per = 25;
+    return out({ total: list.length, page, pages: Math.max(1, Math.ceil(list.length / per)), orders: list.slice((page - 1) * per, page * per) });
+  }
+  if (p === "/dashboard" || p === "/reports") return out(DEMO[`${p}?days=${q.get("days")}`] || DEMO[`${p}?days=30`]);
+  if (p === "/customers") {
+    const s = (q.get("q") || "").toLowerCase();
+    return out(DEMO[q.get("sort") === "spent" ? "/customers?sort=spent" : "/customers"].filter(c => !s || [c.name, c.phone, c.email].join(" ").toLowerCase().includes(s)));
+  }
+  return out(DEMO[p]);
+}
+// In demo, export and invoice links point at the API — open the saved invoices instead.
+document.addEventListener("click", e => {
+  const a = DEMO && e.target.closest('a[href^="/api/admin/"]');
+  if (!a) return;
+  e.preventDefault();
+  const m = a.getAttribute("href").match(/orders\/([\w-]+)\/invoice(\?type=slip)?/);
+  if (m) window.open(`demo/invoices/${m[1]}-${m[2] ? "slip" : "invoice"}.html`, "_blank", "noopener");
+  else toast("CSV export works on your own server — not in this demo");
+});
+
 async function api(path, opts = {}) {
+  if (DEMO) return demoApi(path, opts);
   const res = await fetch("/api/admin" + path, {
     method: opts.method || "GET", credentials: "same-origin",
     headers: opts.raw ? { "Content-Type": opts.type } : { "Content-Type": "application/json" },
@@ -112,10 +156,11 @@ $("#loginForm").onsubmit = async e => {
   try { await api("/login", { method: "POST", body: Object.fromEntries(new FormData(e.target)) }); await boot(); }
   catch (ex) { $("#loginErr").textContent = ex.message; }
 };
-$("#logout").onclick = async () => { await api("/logout", { method: "POST" }).catch(() => {}); showLogin(); };
+$("#logout").onclick = async () => { if (DEMO) return toast(DEMO_MSG); await api("/logout", { method: "POST" }).catch(() => {}); showLogin(); };
 $("#sideToggle").onclick = () => $("#side").classList.toggle("open");
 
 async function boot() {
+  if (!DEMO) await detectDemo();
   try { ME = await api("/me"); } catch { return showLogin(); }
   SETTINGS = await api("/settings");
   $("#login").hidden = true; $("#app").hidden = false;
@@ -126,6 +171,7 @@ async function boot() {
   pb.innerHTML = { demo: "Online payments are in <b>demo mode</b> — no real money is collected. Add your Razorpay keys to go live (see the setup guide).",
     test: "Razorpay is in <b>test mode</b> — payments are simulated. Switch to live keys before launch.",
     off: "Online payments are <b>off</b> — customers can only use cash on delivery. Add Razorpay keys to accept UPI and cards." }[mode] || "";
+  if (DEMO) { pb.hidden = false; pb.innerHTML = "<b>Demo admin with sample data.</b> Customers and orders are made up and nothing you change is saved. The real admin runs on your own server (see SETUP.md)."; }
   refreshCounts();
   route();
 }
