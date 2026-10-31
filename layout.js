@@ -38,16 +38,15 @@ const HEADER = `
 <header class="header" id="header">
   <div class="announce" id="announce">Festive offer: 50% off all Green and Black Tea blends. Pour something good into the season.</div>
   <div class="header__bar">
-    <nav class="header__left">
-      <a href="shop.html?cat=ctc" class="mono-link">SipAmrit CTC</a>
-      <a href="shop.html" class="mono-link">Shop</a>
-      <button class="btn btn--menu" id="menuOpen" aria-label="Open menu"><span class="burger"></span>Menu</button>
-    </nav>
     <a href="index.html" class="header__logo" aria-label="Wellitas home"><img src="assets/img/logo.png" alt="Wellitas – Refresh, Relax, Revive"></a>
-    <nav class="header__right">
-      <a href="track.html" class="mono-link hide-sm">[Track order]</a>
-      <button class="mono-link cart-link" id="cartOpen">[Cart <span id="cartCount">0</span>]</button>
+    <nav class="header__nav" aria-label="Main">
+      <a href="index.html">Home</a><a href="index.html#welcome">About</a><a href="shop.html">Shop</a><a href="shop.html?cat=gifts">Gifting</a><a href="index.html#journal">Blog</a><a href="#contact">Contact Us</a>
     </nav>
+    <div class="header__icons">
+      <a href="track.html" class="icon-btn" aria-label="Track your order" title="Track your order"><svg viewBox="0 0 24 24"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"/><circle cx="7" cy="17.5" r="1.6"/><circle cx="17" cy="17.5" r="1.6"/></svg></a>
+      <button class="icon-btn" id="cartOpen" aria-label="Open cart" title="Cart"><svg viewBox="0 0 24 24"><path d="M3 4h2.2l2.1 10.2a1 1 0 0 0 1 .8h8.9a1 1 0 0 0 1-.8L20 8H6.1"/><circle cx="9.5" cy="19" r="1.3"/><circle cx="17" cy="19" r="1.3"/></svg><b id="cartCount"></b></button>
+      <button class="icon-btn menu-toggle" id="menuOpen" aria-label="Open menu"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    </div>
   </div>
 </header>
 
@@ -127,6 +126,12 @@ const FOOTER = `
 document.body.insertAdjacentHTML("afterbegin", HEADER);
 document.body.insertAdjacentHTML("beforeend", FOOTER);
 
+/* ---------- current page in the nav ---------- */
+$$(".header__nav a").forEach(a => {
+  const u = new URL(a.href);
+  if (u.pathname === location.pathname && !u.hash && (u.search === location.search || (!u.search && !location.search))) a.classList.add("on");
+});
+
 /* ---------- header on scroll (pages without a video hero keep the solid bar) ---------- */
 const header = $("#header");
 const solid = document.body.classList.contains("solid");
@@ -150,7 +155,7 @@ addEventListener("keydown", e => { if (e.key === "Escape") { setMenu(false); set
 
 function renderCart() {
   const items = Cart.get().map(i => ({ ...i, p: PRODUCTS.find(p => p.slug === i.slug) })).filter(i => i.p);
-  $("#cartCount").textContent = items.reduce((a, i) => a + i.qty, 0);
+  $("#cartCount").textContent = items.reduce((a, i) => a + i.qty, 0) || "";
   const box = $("#cartItems"), foot = $("#cartFoot");
   if (!items.length) {
     box.innerHTML = `<div class="drawer__empty"><p class="display small-display">Your cart is empty</p><a href="shop.html" class="btn">Shop the collection</a></div>`;
