@@ -79,9 +79,13 @@ function go(i) {
     cta.href = productUrl(t);
     info.classList.remove("fade");
   };
+  // Up next: the following two teas, faded, on the left — click to jump to one.
+  $("#queue").innerHTML = [1, 2].map(k => { const n = (i + k) % TEAS.length, q = TEAS[n];
+    return `<button class="queue__item" data-go="${n}" aria-label="Show ${esc(q.name)}"><img src="${imgSrc(q.img)}" alt=""><span class="mono">${esc(q.short || q.name)}</span></button>`; }).join("");
   if (cur < 0) fill(); else { info.classList.add("fade"); setTimeout(fill, 300); }
   cur = i;
 }
+$("#queue").addEventListener("click", e => { const b = e.target.closest("[data-go]"); if (b) go(+b.dataset.go); });
 $(".arrow--prev").onclick = () => go(cur - 1);
 $(".arrow--next").onclick = () => go(cur + 1);
 go(0);
